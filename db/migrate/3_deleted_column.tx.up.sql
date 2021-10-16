@@ -1,0 +1,1 @@
+alter table todos add isDeleted boolean;
