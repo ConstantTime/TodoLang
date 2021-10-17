@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/jmoiron/sqlx"
 	"log"
@@ -22,7 +21,7 @@ func addTodo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Printf("Adding todo: %v\n", todo)
+	log.Printf("Adding todo: %v\n", todo)
 
 	_ = db.AddTodo(dbClient, todo)
 

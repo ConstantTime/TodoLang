@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/go-pg/migrations/v8"
 	"github.com/go-pg/pg/v10"
+	"log"
 	"os"
 )
 
@@ -34,14 +35,14 @@ func RunMigrations() {
 		exitf(err.Error())
 	}
 	if newVersion != oldVersion {
-		fmt.Printf("Migrated from version %d to %d\n", oldVersion, newVersion)
+		log.Printf("Migrated from version %d to %d\n", oldVersion, newVersion)
 	} else {
-		fmt.Printf("Version is %d\n", oldVersion)
+		log.Printf("Version is %d\n", oldVersion)
 	}
 }
 
 func usage() {
-	fmt.Print(usageText)
+	log.Print(usageText)
 	flag.PrintDefaults()
 	os.Exit(2)
 }
