@@ -12,7 +12,7 @@ import (
 
 var dbClient *sqlx.DB
 
-func addTodo(w http.ResponseWriter, r *http.Request) {
+func AddTodo(w http.ResponseWriter, r *http.Request) {
 	var todo models.Todo
 
 	err := json.NewDecoder(r.Body).Decode(&todo)
@@ -27,36 +27,36 @@ func addTodo(w http.ResponseWriter, r *http.Request) {
 
 	res, err := json.Marshal(todo)
 	if err != nil {
-		log.Printf("Error while marshalling addTodo response: %v", err)
+		log.Printf("Error while marshalling AddTodo response: %v", err)
 	}
 
 	returnJsonResponse(w, res)
 }
 
-func getTodo(w http.ResponseWriter, r *http.Request) {
+func GetTodo(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
 	todo, _ := db.GetTodoById(dbClient, id)
 
 	res, err := json.Marshal(todo)
 	if err != nil {
-		log.Printf("Error while marshalling getTodo response: %v", err)
+		log.Printf("Error while marshalling GetTodo response: %v", err)
 	}
 
 	returnJsonResponse(w, res)
 }
 
-func getTodos(w http.ResponseWriter, r *http.Request) {
+func GetTodos(w http.ResponseWriter, r *http.Request) {
 	todos, _ := db.GetTodos(dbClient)
 
 	res, err := json.Marshal(todos)
 	if err != nil {
-		log.Printf("Error while marshalling getTodos response: %v", err)
+		log.Printf("Error while marshalling GetTodos response: %v", err)
 	}
 
 	returnJsonResponse(w, res)
 }
 
-func deleteTodo(w http.ResponseWriter, r *http.Request) {
+func DeleteTodo(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
 	err := db.DeleteTodoById(dbClient, id)
 
@@ -73,9 +73,9 @@ func returnJsonResponse(w http.ResponseWriter, res []byte) {
 func HandleAllTodoRequests() {
 	dbClient = db.ConnectToDatabase()
 	router := mux.NewRouter().StrictSlash(true)
-	router.HandleFunc("/todos", addTodo).Methods(http.MethodPost)
-	router.HandleFunc("/todos/{id}", getTodo).Methods(http.MethodGet)
-	router.HandleFunc("/todos", getTodos).Methods(http.MethodGet)
-	router.HandleFunc("/todos/{id}", deleteTodo).Methods(http.MethodDelete)
+	router.HandleFunc("/todos", AddTodo).Methods(http.MethodPost)
+	router.HandleFunc("/todos/{id}", GetTodo).Methods(http.MethodGet)
+	router.HandleFunc("/todos", GetTodos).Methods(http.MethodGet)
+	router.HandleFunc("/todos/{id}", DeleteTodo).Methods(http.MethodDelete)
 	log.Fatal(http.ListenAndServe(":8081", router))
 }
