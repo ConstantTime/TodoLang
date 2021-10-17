@@ -1,17 +1,17 @@
 package controllers
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
+	"github.com/jmoiron/sqlx"
 	"log"
 	"net/http"
 	"todo/db"
 	"todo/models"
 )
 
-var dbClient *sql.DB
+var dbClient *sqlx.DB
 
 func addTodo(w http.ResponseWriter, r *http.Request) {
 	var todo models.Todo
@@ -25,18 +25,36 @@ func addTodo(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("Adding todo: %v\n", todo)
 
 	_ = db.AddTodo(dbClient, todo)
-	json.NewEncoder(w).Encode(todo)
+
+	res, err := json.Marshal(todo)
+	if err != nil {
+		log.Printf("Error while marshalling addTodo response: %v", err)
+	}
+
+	returnJsonResponse(w, res)
 }
 
 func getTodo(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
 	todo, _ := db.GetTodoById(dbClient, id)
-	json.NewEncoder(w).Encode(todo)
+
+	res, err := json.Marshal(todo)
+	if err != nil {
+		log.Printf("Error while marshalling getTodo response: %v", err)
+	}
+
+	returnJsonResponse(w, res)
 }
 
 func getTodos(w http.ResponseWriter, r *http.Request) {
 	todos, _ := db.GetTodos(dbClient)
-	json.NewEncoder(w).Encode(todos)
+
+	res, err := json.Marshal(todos)
+	if err != nil {
+		log.Printf("Error while marshalling getTodos response: %v", err)
+	}
+
+	returnJsonResponse(w, res)
 }
 
 func deleteTodo(w http.ResponseWriter, r *http.Request) {
@@ -46,6 +64,11 @@ func deleteTodo(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("Error while deleting todo (id = %v): %v", id, err)
 	}
+}
+
+func returnJsonResponse(w http.ResponseWriter, res []byte) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(res)
 }
 
 func HandleAllTodoRequests() {

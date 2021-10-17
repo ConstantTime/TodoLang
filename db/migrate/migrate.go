@@ -24,23 +24,19 @@ func RunMigrations() {
 	flag.Usage = usage
 	flag.Parse()
 
-	fmt.Println("connecting to db")
-
 	db := pg.Connect(&pg.Options{
 		User:     "postgres",
 		Database: "pg_migrations_example",
 	})
-
-	fmt.Printf("connected to db %v\n", flag.Args())
 
 	oldVersion, newVersion, err := migrations.Run(db, flag.Args()...)
 	if err != nil {
 		exitf(err.Error())
 	}
 	if newVersion != oldVersion {
-		fmt.Printf("migrated from version %d to %d\n", oldVersion, newVersion)
+		fmt.Printf("Migrated from version %d to %d\n", oldVersion, newVersion)
 	} else {
-		fmt.Printf("version is %d\n", oldVersion)
+		fmt.Printf("Version is %d\n", oldVersion)
 	}
 }
 

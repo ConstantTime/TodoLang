@@ -1,17 +1,16 @@
 package db
 
 import (
-	"database/sql"
-	"fmt"
+	"github.com/jmoiron/sqlx"
 	"log"
 	"todo/models"
 
 	_ "github.com/lib/pq"
 )
 
-func ConnectToDatabase() *sql.DB {
+func ConnectToDatabase() *sqlx.DB {
 	connStr := "user=postgres dbname=pg_migrations_example sslmode=disable"
-	db, err := sql.Open("postgres", connStr)
+	db, err := sqlx.Connect("postgres", connStr)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -19,7 +18,7 @@ func ConnectToDatabase() *sql.DB {
 	return db
 }
 
-func AddTodo(dbClient *sql.DB, todo models.Todo) error {
+func AddTodo(dbClient *sqlx.DB, todo models.Todo) error {
 	_, err := dbClient.Query(`insert into 
     	todos(id, title, description, isDeleted) values($1, $2, $3, false)`,
 		todo.Id,
@@ -34,7 +33,7 @@ func AddTodo(dbClient *sql.DB, todo models.Todo) error {
 	return err
 }
 
-func GetTodoById(dbClient *sql.DB, id string) (models.Todo, error) {
+func GetTodoById(dbClient *sqlx.DB, id string) (models.Todo, error) {
 	var todo models.TodoEntity
 	err := dbClient.QueryRow(`select id, title, description from todos where id=$1`, id).Scan(
 		&todo.Id,
@@ -53,29 +52,27 @@ func GetTodoById(dbClient *sql.DB, id string) (models.Todo, error) {
 	}, err
 }
 
-func GetTodos(dbClient *sql.DB) ([]models.Todo, error) {
-	rows, err := dbClient.Query(`select id, title from todos where isDeleted=false`)
+func GetTodos(dbClient *sqlx.DB) ([]models.Todo, error) {
+	var todoEntities []models.TodoEntity
+	err := dbClient.Select(&todoEntities,`select id, title, description from todos where isdeleted=false`)
 
 	if err != nil {
-		log.Printf("Error while getting all todos %v", err)
+		log.Printf("Error while getting all todos from DB: %v", err)
 	}
 
 	var todos []models.Todo
-
-	for rows.Next() {
-		fmt.Printf("rows are %v\n", rows)
-		var todoEntity models.TodoEntity
-		err = rows.Scan(&todoEntity)
-		fmt.Printf("entity is %v\n", todoEntity)
+	for i := range todoEntities {
 		todos = append(todos, models.Todo{
-			Id:          todoEntity.Id,
+			Id:          todoEntities[i].Id,
+			Title:       todoEntities[i].Title,
+			Description: todoEntities[i].Description,
 		})
 	}
 
 	return todos, err
 }
 
-func DeleteTodoById(dbClient *sql.DB, id string) error {
+func DeleteTodoById(dbClient *sqlx.DB, id string) error {
 	_, err := dbClient.Query(`update todos set isDeleted=true where id=$1`, id)
 
 	if err != nil {
